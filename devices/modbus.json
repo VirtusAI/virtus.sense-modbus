@@ -1,0 +1,13 @@
+[
+	{
+		"id": 45,
+		"name": "eastron",
+		"devices": [
+			{
+				"id": 4,
+				"name": "sdm530",
+				"label": "Three phase modbus energy meter"
+			}
+		]
+	}
+]

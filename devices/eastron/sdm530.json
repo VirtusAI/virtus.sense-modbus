@@ -1,0 +1,30 @@
+{
+	"developerId": 45,
+	"deviceId": 4,
+	"label": "3 Phase Energy Meter",
+	"validation": [
+	],
+	"registers": [
+		{
+			"name": "EnergyA",
+			"address": 1033,
+			"size": 2,
+			"type": "float",
+			"unit": "WATT",
+			"transform": "1000*_"
+		}
+	],
+	"validation": [
+		{
+			"register": {
+				"name": "EnergyA",
+				"address": 1033,
+				"size": 2,
+				"type": "float",
+				"unit": "WATT",
+				"transform": "1000*_"
+			},
+			"match": "00AE87F"
+		}
+	]
+}
