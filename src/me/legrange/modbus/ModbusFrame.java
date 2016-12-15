@@ -21,7 +21,21 @@ package me.legrange.modbus;
  * @since 1.0
  * @author Gideon le Grange https://github.com/GideonLeGrange
  */
-abstract class ModbusFrame {
+abstract public class ModbusFrame {
+
+	public static final int READ_INPUT_REGISTERS = 3;
+	public static final int READ_HOLDING_REGISTERS = 4;
+	
+	public static ModbusFrame readRegister(int func, int deviceId, int register, int size) throws CrcException {
+		switch (func) {
+		case READ_INPUT_REGISTERS:
+			return new ReadInputRegisters(deviceId, register, size);
+		case READ_HOLDING_REGISTERS:
+			return new ReadHoldingRegisters(deviceId, register, size);
+		default:
+			return new ReadInputRegisters(deviceId, register, size);
+		}
+	}
     
     /** 
      * Create a new frame from the supplied raw Modbus data. 

@@ -1,6 +1,5 @@
 package org.virtus.sense.poller;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
@@ -12,8 +11,8 @@ import org.virtus.sense.poller.config.MappingErrorException;
 import org.virtus.sense.poller.config.ValidationStep;
 
 import me.legrange.modbus.ModbusException;
+import me.legrange.modbus.ModbusFrame;
 import me.legrange.modbus.ModbusPort;
-import me.legrange.modbus.ReadInputRegisters;
 import me.legrange.modbus.ResponseFrame;
 
 public class ModbusDiscoveryService extends TimerTask {
@@ -39,21 +38,23 @@ public class ModbusDiscoveryService extends TimerTask {
 		this.pollingAddress = MIN_ADDRESS;
 		
 		this.validationPred = e -> {
-			try {
-				ReadInputRegisters req = new ReadInputRegisters(pollingAddress, 
-						e.register.address, e.register.size);
-				
-				ResponseFrame res = port.poll(req);
+			try {				
+				ResponseFrame res = this.port.poll(ModbusFrame.readRegister(e.register.func, pollingAddress, 
+						e.register.address, e.register.size));
 				
 				if(!res.isError()) {
-					System.out.println("Validate match of " + Arrays.toString(res.getBytes()) + " with " + e.match);
-					return false;
+					boolean valid = e.validate(res.getBytes());
+					
+					if(valid)
+						System.out.println("Validated device " + e.register.name);
+					return true;
 				} else {
 					System.out.println("Deu merda");
 					return false;
 				}							
 			} catch (ModbusException err) {
-				err.printStackTrace();
+				System.err.println("Skipping this address");
+				//err.printStackTrace();
 				return false;
 			}
 		};
@@ -68,6 +69,7 @@ public class ModbusDiscoveryService extends TimerTask {
 				
 				System.out.println("Testing addr " + pollingAddress);
 				
+				// poll each device from library
 				lib.getAllDevices().forEach(dev -> {
 					if(dev.validation.stream().allMatch(validationPred)) {
 						activeDevices.put(pollingAddress, dev);

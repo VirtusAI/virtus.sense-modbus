@@ -1,6 +1,8 @@
 package examples;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Map;
 
 import org.virtus.sense.poller.ModbusListener;
 import org.virtus.sense.poller.ModbusPoller;
@@ -17,13 +19,13 @@ public class TestMemoryStore {
 	public static void main(String[] args) {
 		try {
 			ModbusPoller poller = ModbusPoller.createRTUPoller(
-					"/dev/ttyUSB1", 
+					"COM7", 
 					9600, 
 					8, 
 					1, 
-					SerialPort.PARITY_EVEN, 
-					5000, 
-					20000, 
+					SerialPort.PARITY_NONE, 
+					30000, 
+					10000, 
 					new FileLibrary(new File("devices")), 
 					new MemoryStore());
 			
@@ -31,7 +33,8 @@ public class TestMemoryStore {
 				
 				@Override
 				public void received(Register reg, byte[] bytes) {
-					System.out.println("Data received");
+					System.out.println("Data received -> " + Arrays.toString(bytes));
+					System.out.println(Register.decode(reg, bytes));
 					
 				}
 				
@@ -44,6 +47,15 @@ public class TestMemoryStore {
 				@Override
 				public void deviceDetected(Device dev) {
 					System.out.println("New device was detected");
+					
+				}
+
+				@Override
+				public void pollingComplete(Map<Register, byte[]> map) {
+					
+					System.out.println("Polling complete");
+					
+					map.entrySet().forEach(e -> System.out.println("\t" + e.getKey().name + " = " + Register.decode(e.getKey(), e.getValue())));
 					
 				}
 			});

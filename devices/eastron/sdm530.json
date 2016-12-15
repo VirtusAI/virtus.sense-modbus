@@ -6,25 +6,82 @@
 	],
 	"registers": [
 		{
-			"name": "EnergyA",
-			"address": 1033,
+			"name": "VoltsA",
+			"address": 0,
 			"size": 2,
+			"func": 4,
+			"type": "float",
+			"unit": "VOLTS",
+			"transform": "_"
+		},
+		{
+			"name": "VoltsB",
+			"address": 2,
+			"size": 2,
+			"func": 4,
+			"type": "float",
+			"unit": "VOLTS",
+			"transform": "_"
+		},
+		{
+			"name": "VoltsC",
+			"address": 4,
+			"size": 2,
+			"func": 4,
+			"type": "float",
+			"unit": "VOLTS",
+			"transform": "_"
+		},
+		{
+			"name": "EnergyA",
+			"address": 12,
+			"size": 2,
+			"func": 4,
 			"type": "float",
 			"unit": "WATT",
-			"transform": "1000*_"
+			"transform": "_"
+		},
+		{
+			"name": "EnergyB",
+			"address": 14,
+			"size": 2,
+			"func": 4,
+			"type": "float",
+			"unit": "WATT",
+			"transform": "_"
+		},
+		{
+			"name": "EnergyC",
+			"address": 16,
+			"size": 2,
+			"func": 4,
+			"type": "float",
+			"unit": "WATT",
+			"transform": "_"
 		}
 	],
 	"validation": [
 		{
 			"register": {
-				"name": "EnergyA",
-				"address": 1033,
+				"name": "Password",
+				"address": 24,
 				"size": 2,
+				"func": 3,
 				"type": "float",
-				"unit": "WATT",
-				"transform": "1000*_"
+				"transform": "_"
 			},
-			"match": "00AE87F"
+			"match": "1000.0"
+		},
+		{
+			"register": {
+				"name": "Demand Period",
+				"address": 28,
+				"size": 2,
+				"func": 3,
+				"type": "float",
+				"transform": "_"
+			},
+			"match": "60.0"
 		}
 	]
 }

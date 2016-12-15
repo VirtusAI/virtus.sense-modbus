@@ -1,15 +1,17 @@
 package org.virtus.sense.poller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimerTask;
 
 import org.virtus.sense.poller.config.Device;
+import org.virtus.sense.poller.config.Register;
 
 import me.legrange.modbus.ModbusError;
 import me.legrange.modbus.ModbusException;
+import me.legrange.modbus.ModbusFrame;
 import me.legrange.modbus.ModbusPort;
-import me.legrange.modbus.ReadInputRegisters;
 import me.legrange.modbus.ResponseFrame;
 
 public class ModbusPollingService extends TimerTask {
@@ -25,6 +27,8 @@ public class ModbusPollingService extends TimerTask {
 		this.activeDevices = activeDevices;
 		this.listeners = listeners;
 		this.port = port;
+		
+		this.devicePolls = new HashMap<>();
 	}
 
 	@Override
@@ -38,30 +42,40 @@ public class ModbusPollingService extends TimerTask {
 					devicePolls.put(e.getKey(), Poll.generatePolls(e.getValue().registers));
 				}
 				
-				// iterate devices
+				// iterate device poll lists
 				devicePolls.entrySet().stream().forEach(polls -> {
+					
+					// poll result map gatherer
+					Map<Register, byte[]> pollsRes = new HashMap<>();
 					
 					// iterate polls
 					polls.getValue().stream().forEach(poll -> {
-						try {
-							ReadInputRegisters req = new ReadInputRegisters(polls.getKey(), 
-									poll.getAddress(), poll.getSize());
+						try {							
+							ResponseFrame res = port.poll(ModbusFrame.readRegister(poll.getFunc(), polls.getKey(), 
+									poll.getAddress(), poll.getSize()));
 							
-							ResponseFrame res = port.poll(req);
+							// gather poll result
+							if(!res.isError())
+								pollsRes.putAll(poll.getPollResult(res.getBytes()));
+							else
+								System.out.println("Modbus error: " + ModbusError.valueOf(res.getFunction()));
 							
-							listeners.stream().forEach(l -> {
+							/*listeners.stream().forEach(l -> {
 								if(!res.isError()) {
 		                            poll.applyBytes(res.getBytes(), l);
 								} else {
 									l.error(new ModbusReaderException(
 											String.format("Modbus error: %s", ModbusError.valueOf(res.getFunction()))));
 								}
-							});
+							});*/
 						} catch (ModbusException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 					});
+					
+					// call listeners with result
+					listeners.forEach(l -> l.pollingComplete(pollsRes));					
 				});
 				
 			});

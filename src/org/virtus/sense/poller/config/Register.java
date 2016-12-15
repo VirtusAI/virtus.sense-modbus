@@ -1,6 +1,7 @@
 package org.virtus.sense.poller.config;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
@@ -15,6 +16,7 @@ public class Register {
 	public String name;
 	public int address;
 	public int size;
+	public int func;
 	public String type;
 	public String unit;
 	public String transform = "_";
@@ -38,6 +40,11 @@ public class Register {
         }
         return trans;
 	}
+	
+	@Override
+	public int hashCode() {		
+		return new String( address + name + size + func ).hashCode();
+	}
 
     
     /** 
@@ -51,12 +58,14 @@ public class Register {
         switch (reg.getType()) {
             case FLOAT :
                 return decodeFloat(reg, bytes);
+            case INT :
+            	return decodeInt(reg, Utils.toIntArray(bytes));
             default : return 0.0;
         }
     }
     
     static double decodeFloat(Register reg, byte bytes[]) {
-        float f = ByteBuffer.wrap(new byte[]{bytes[2], bytes[3], bytes[0], bytes[1]}).getFloat();
+        float f = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN).getFloat();
         return reg.getTransform().setVariable("_", f).evaluate();
     }
     

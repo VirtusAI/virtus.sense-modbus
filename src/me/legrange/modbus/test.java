@@ -15,6 +15,8 @@
  */
 package me.legrange.modbus;
 
+import java.util.Arrays;
+
 import purejavacomm.SerialPort;
 
 /**
@@ -29,7 +31,8 @@ public class test {
         try {
         t.start();
 //        t.write(1604, 33);
-        t.poll(0, 2);
+        
+        System.out.println(Arrays.toString(t.poll(0, 20)));
          // t.write(1652, 6);
   //      t.write(1619, 1);
 //        t.write(1620, 1);
@@ -41,7 +44,7 @@ public class test {
 
     private void start() throws SerialException {
         System.out.println("[Opening port]");
-        modbus = SerialModbusPort.open("/dev/ttyUSB1", 9600, 8, 1, SerialPort.PARITY_EVEN);
+        modbus = SerialModbusPort.open("COM7", 9600, 8, 1, SerialPort.PARITY_NONE);
 
     }
 
@@ -53,7 +56,7 @@ public class test {
     }
 
     private int[] poll(int register, int size) throws CrcException, ModbusException {
-        ResponseFrame poll = modbus.poll(new ReadInputRegisters(24, register, size));
+        ResponseFrame poll = modbus.poll(new ReadInputRegisters(1, register, size));
         if (poll.isError()) {
             throw new ModbusException(String.format("Error: %s", ModbusError.valueOf(poll.getFunction())));
         } else {

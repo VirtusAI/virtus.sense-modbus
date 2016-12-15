@@ -30,11 +30,13 @@ import org.virtus.sense.poller.config.Register;
 class Poll {
  
     private final int address;
+    private final int func;
     private int size;
     private final Map<Integer, Register> registers = new HashMap<>();
     
     private Poll(Register reg) {
         this.address = reg.address;
+        this.func = reg.func;
         this.size = reg.size;
         registers.put(0, reg);
     }
@@ -52,17 +54,38 @@ class Poll {
         return size;
     };
     
+    int getFunc() {
+    	return func;
+    }
+    
     /** call listener.received() for each register and it's subset of bytes in the response received 
      * 
      * @param bytes The bytes received for all registers polled. 
      * @param listener The listener to call. 
      */
     void applyBytes(byte bytes[], ModbusListener listener) {
-        registers.keySet().stream().map((offset) -> registers.get(offset)).forEach((Register reg) -> {
+        registers.values().forEach((Register reg) -> {
             byte buf[] = new byte[reg.size*2];
             System.arraycopy(bytes, (reg.address - address)*2, buf, 0, reg.size*2);
             listener.received(reg, buf);
         });
+    }
+    
+    /** return all registers and each subset of bytes in a Map 
+     * 
+     * @param bytes The bytes received for all registers polled. 
+     */
+    
+    Map<Register, byte[]> getPollResult(byte[] bytes) {
+    	Map<Register, byte[]> res = new HashMap<>();
+    	
+        registers.values().forEach((Register reg) -> {
+            byte buf[] = new byte[reg.size*2];
+            System.arraycopy(bytes, (reg.address - address)*2, buf, 0, reg.size*2);
+            res.put(reg, buf);
+        });
+    	
+    	return res;
     }
     
     /**
@@ -73,14 +96,16 @@ class Poll {
     static List<Poll> generatePolls(List<Register> registers) {
         Collections.sort(registers, (Register o1, Register o2) -> o1.address - o2.address);
         Poll poll = null;
+        int currentFunction  = -1;
         List<Poll> result = new LinkedList<>();
         for (Register reg : registers) {
-            if ((poll != null) && ((poll.address + poll.size) == reg.address)) { 
+            if ((poll != null) && ((poll.address + poll.size) == reg.address) && reg.func == currentFunction) { 
                 poll.add(reg);
             }
             else {
                 poll = new Poll(reg);
                 result.add(poll);
+                currentFunction = reg.func;
             }
         }
         return result;

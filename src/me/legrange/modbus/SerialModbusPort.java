@@ -55,7 +55,7 @@ public class SerialModbusPort extends ModbusPort {
      * @return The Modbus response packet
      * @throws ModbusException Thrown if an error occurs.
      */
-    public ResponseFrame poll(ReadInputRegisters req) throws ModbusException {
+    public ResponseFrame poll(ModbusFrame req) throws ModbusException {
         return sendFrame(req);
     }
 

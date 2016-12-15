@@ -35,7 +35,7 @@ public class ReadInputRegisters extends ModbusFrame {
     public ReadInputRegisters(int deviceId, int register, int size) throws CrcException {
         super(FrameUtil.withCrc(new byte[]{
             (byte) deviceId,
-            (byte) 4, // function code
+            (byte) 3, // function code
             (byte) ((register & 0xff00) >> 8),
             (byte) (register & 0xff),
             (byte) ((size & 0xff00) >> 8),

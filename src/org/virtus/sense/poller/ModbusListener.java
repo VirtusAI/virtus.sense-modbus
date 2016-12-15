@@ -16,6 +16,8 @@
 
 package org.virtus.sense.poller;
 
+import java.util.Map;
+
 import org.virtus.sense.poller.config.Device;
 import org.virtus.sense.poller.config.Register;
 
@@ -33,6 +35,12 @@ public interface ModbusListener {
      */
     void received(Register reg, byte bytes[]);
     
+    /** Activates whenever device poll is completed
+     * 
+     * @param map Map of all registers and bytes that were polled.
+     */
+    void pollingComplete(Map<Register, byte[]> map);
+    
     /** An error occurred while doing a Modbus request 
      * 
      * @param e The exception that occurred. 
@@ -44,5 +52,7 @@ public interface ModbusListener {
      * @param dev The device that was detected
      */
     void deviceDetected(Device dev);
+    
+    
 
 }
