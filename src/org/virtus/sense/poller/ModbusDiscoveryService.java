@@ -9,6 +9,8 @@ import org.virtus.sense.poller.config.Device;
 import org.virtus.sense.poller.config.DeviceLibrary;
 import org.virtus.sense.poller.config.MappingErrorException;
 import org.virtus.sense.poller.config.ValidationStep;
+import org.virtus.sense.store.DeviceStore;
+import org.virtus.sense.store.StoredDevice;
 
 import me.legrange.modbus.ModbusException;
 import me.legrange.modbus.ModbusFrame;
@@ -21,6 +23,7 @@ public class ModbusDiscoveryService extends TimerTask {
 	private static int MAX_ADDRESS = 255;
 	
 	private Map<Integer, Device> activeDevices;
+	private DeviceStore store;
 	private DeviceLibrary lib; 
 	private List<ModbusListener> listeners;
 	
@@ -30,8 +33,9 @@ public class ModbusDiscoveryService extends TimerTask {
 	private Predicate<ValidationStep> validationPred;
 	
 	public ModbusDiscoveryService(Map<Integer, Device> activeDevices, 
-			List<ModbusListener> listeners, DeviceLibrary lib, ModbusPort port) {
+			List<ModbusListener> listeners, DeviceLibrary lib, DeviceStore store, ModbusPort port) {
 		this.activeDevices = activeDevices;
+		this.store = store;
 		this.listeners = listeners;
 		this.lib = lib;
 		this.port = port;
@@ -72,8 +76,13 @@ public class ModbusDiscoveryService extends TimerTask {
 				// poll each device from library
 				lib.getAllDevices().forEach(dev -> {
 					if(dev.validation.stream().allMatch(validationPred)) {
+						// update active device list
 						activeDevices.put(pollingAddress, dev);
 						
+						// persist device to store
+						store.cacheDevice(new StoredDevice(dev.developerId, dev.deviceId, pollingAddress));
+						
+						// fire device detected event
 						listeners.forEach(l -> l.deviceDetected(dev));
 					}
 						

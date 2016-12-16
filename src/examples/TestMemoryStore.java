@@ -9,7 +9,7 @@ import org.virtus.sense.poller.ModbusPoller;
 import org.virtus.sense.poller.config.Device;
 import org.virtus.sense.poller.config.FileLibrary;
 import org.virtus.sense.poller.config.Register;
-import org.virtus.sense.store.MemoryStore;
+import org.virtus.sense.store.VolatileMemoryStore;
 
 import me.legrange.modbus.SerialException;
 import purejavacomm.SerialPort;
@@ -27,7 +27,7 @@ public class TestMemoryStore {
 					30000, 
 					10000, 
 					new FileLibrary(new File("devices")), 
-					new MemoryStore());
+					new VolatileMemoryStore());
 			
 			poller.addListener(new ModbusListener() {
 				
@@ -51,9 +51,9 @@ public class TestMemoryStore {
 				}
 
 				@Override
-				public void pollingComplete(Map<Register, byte[]> map) {
+				public void pollingComplete(Device dev, Map<Register, byte[]> map) {
 					
-					System.out.println("Polling complete");
+					System.out.println("Polling complete - " + dev.label + " id : " + dev.getUniqueId());
 					
 					map.entrySet().forEach(e -> System.out.println("\t" + e.getKey().name + " = " + Register.decode(e.getKey(), e.getValue())));
 					

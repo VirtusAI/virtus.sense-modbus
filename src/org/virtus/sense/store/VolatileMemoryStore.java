@@ -3,10 +3,10 @@ package org.virtus.sense.store;
 import java.util.Collection;
 import java.util.HashMap;
 
-public final class MemoryStore extends DeviceStore {
+public final class VolatileMemoryStore extends DeviceStore {
 	
-	public MemoryStore() {
-		super();
+	public VolatileMemoryStore() {
+		this.cachedDevices = new HashMap<>();
 	}
 
 	@Override
@@ -23,12 +23,6 @@ public final class MemoryStore extends DeviceStore {
 	public void close() throws Exception {
 		// TODO Auto-generated method stub
 
-	}
-
-	@Override
-	protected void loadStore() {
-		this.cachedDevices = new HashMap<>();
-		
 	}
 
 }

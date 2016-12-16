@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.virtus.sense.poller.config.Device;
@@ -84,14 +83,15 @@ public final class ModbusPoller implements AutoCloseable {
 				(long) pollingInterval);
 		
 		this.timer.scheduleAtFixedRate(
-				new ModbusDiscoveryService(activeDevices, listeners, lib, port),
+				new ModbusDiscoveryService(activeDevices, listeners, lib, store, port),
 				(long) 0, 
 				(long) discoveryPoll);
 	}
 
 	@Override
 	public void close() throws Exception {
+		this.timer.cancel();
 		this.store.close();
-		
+		this.port.close();
 	}
 }

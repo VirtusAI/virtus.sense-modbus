@@ -157,6 +157,6 @@ public class SerialModbusPort extends ModbusPort {
     private SerialPort com;
     private static final int timeout = 60000;
   //  private static final boolean debug = Boolean.valueOf(System.getProperty(SerialModbusPort.class.getPackage().getName() + ".debug", "false"));
-    private static final boolean debug = true;
+    private static final boolean debug = false;
 
 }

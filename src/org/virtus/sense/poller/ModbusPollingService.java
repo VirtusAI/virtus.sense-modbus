@@ -37,21 +37,25 @@ public class ModbusPollingService extends TimerTask {
 		activeDevices.entrySet().stream()
 			.forEach(e -> {
 				
+				// better readability
+				Device dev = e.getValue();
+				int netAddr = e.getKey();
+				
 				// generate poll requests one time
-				if(!devicePolls.containsKey(e.getKey())) {
-					devicePolls.put(e.getKey(), Poll.generatePolls(e.getValue().registers));
+				if(!devicePolls.containsKey(netAddr)) {
+					devicePolls.put(netAddr, Poll.generatePolls(dev.registers));
 				}
 				
 				// iterate device poll lists
 				devicePolls.entrySet().stream().forEach(polls -> {
-					
+										
 					// poll result map gatherer
 					Map<Register, byte[]> pollsRes = new HashMap<>();
 					
 					// iterate polls
 					polls.getValue().stream().forEach(poll -> {
 						try {							
-							ResponseFrame res = port.poll(ModbusFrame.readRegister(poll.getFunc(), polls.getKey(), 
+							ResponseFrame res = port.poll(ModbusFrame.readRegister(poll.getFunc(), netAddr, 
 									poll.getAddress(), poll.getSize()));
 							
 							// gather poll result
@@ -60,22 +64,33 @@ public class ModbusPollingService extends TimerTask {
 							else
 								System.out.println("Modbus error: " + ModbusError.valueOf(res.getFunction()));
 							
-							/*listeners.stream().forEach(l -> {
-								if(!res.isError()) {
-		                            poll.applyBytes(res.getBytes(), l);
-								} else {
-									l.error(new ModbusReaderException(
-											String.format("Modbus error: %s", ModbusError.valueOf(res.getFunction()))));
-								}
-							});*/
 						} catch (ModbusException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 					});
 					
+					// check if device unique id was already fetched
+					if(!dev.hasId()) {
+						try {
+							ResponseFrame res = port.poll(ModbusFrame.readRegister(
+									dev.uniqueRegister.func,
+									netAddr,
+									dev.uniqueRegister.address,
+									dev.uniqueRegister.size
+									));
+							
+							// set unique id
+							dev.setId(String.valueOf(Register.decode(dev.uniqueRegister, res.getBytes())));
+							
+						} catch (ModbusException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+					
 					// call listeners with result
-					listeners.forEach(l -> l.pollingComplete(pollsRes));					
+					listeners.forEach(l -> l.pollingComplete(dev, pollsRes));					
 				});
 				
 			});

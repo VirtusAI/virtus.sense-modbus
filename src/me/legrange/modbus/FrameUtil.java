@@ -90,14 +90,18 @@ class FrameUtil {
      * @throws CrcException
      */
     static void validate(byte frame[]) throws CrcException {
-        byte have[] = new byte[2];
-        System.arraycopy(frame, frame.length-2, have, 0, 2);
-        byte data[] = new byte[frame.length - 2];
-        System.arraycopy(frame, 0, data, 0, frame.length - 2);
-        byte want[] = calculateCrc16(data);
-        if (!Arrays.equals(want, have)) {
-            throw new CrcException(String.format("CRC error (expected %s, found %s)", hexString(want), hexString(have)));
-        }
+    	try {
+	        byte have[] = new byte[2];
+	        System.arraycopy(frame, frame.length-2, have, 0, 2);
+	        byte data[] = new byte[frame.length - 2];
+	        System.arraycopy(frame, 0, data, 0, frame.length - 2);
+	        byte want[] = calculateCrc16(data);
+	        if (!Arrays.equals(want, have)) {
+	            throw new CrcException(String.format("CRC error (expected %s, found %s)", hexString(want), hexString(have)));
+	        }    		
+    	} catch(Exception e) {
+    		throw new CrcException("CRC error (Array Index out of Bounds)");
+    	}
     }
 
     /** 

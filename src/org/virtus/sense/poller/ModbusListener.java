@@ -39,7 +39,7 @@ public interface ModbusListener {
      * 
      * @param map Map of all registers and bytes that were polled.
      */
-    void pollingComplete(Map<Register, byte[]> map);
+    void pollingComplete(Device dev, Map<Register, byte[]> map);
     
     /** An error occurred while doing a Modbus request 
      * 
